@@ -28,8 +28,8 @@ int main(){
   }
   parameters.find(response)->second.setDual(1);
   AutoDiff discount=exp(-parameters.find("R")->second*parameters.find("Maturity")->second);
-  AutoDiff Call=BSCall<AutoDiff>(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
-  AutoDiff Put=BSPut<AutoDiff>(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
+  AutoDiff Call=BSCall(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
+  AutoDiff Put=BSPut(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
   std::cout<<"Call Price: "<<Call.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Call.getDual()<<std::endl;
   std::cout<<"Put Price: "<<Put.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Put.getDual()<<std::endl;
 }
