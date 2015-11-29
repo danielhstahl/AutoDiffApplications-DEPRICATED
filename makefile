@@ -1,14 +1,11 @@
 LDFLAGS=-L../NewtonOptimization -lNewton -L../MiscellaniousUtilities -lDate  -L../eigen -L../BinomialTree -lTree -L../AutoDiff -lAutoDiff
 INCLUDES=-I../NewtonOptimization -I../MiscellaniousUtilities -I../eigen -I../BinomialTree -I../rapidjson -I../AutoDiff
 
-marketRisk: main.o BlackScholes.o
-	g++ -std=c++14 -O3  -w -fPIC main.o BlackScholes.o $(LDFLAGS) $(INCLUDES) -o marketRisk -fopenmp
+OptionPricing: main.o
+	g++ -std=c++14 -O3  -w -fPIC main.o  $(LDFLAGS) $(INCLUDES) -o OptionPricing -fopenmp
 
-main.o: main.cpp BlackScholes.h
+main.o: main.cpp BlackScholes.h BlackScholes.hpp HullWhite.h HullWhite.hpp
 	g++ -std=c++14 -O3  -w -c -fPIC main.cpp $(LDFLAGS) $(INCLUDES) -fopenmp
 
-BlackScholes.o: BlackScholes.cpp
-	g++ -std=c++14 -O3  -w -c -fPIC BlackScholes.cpp $(LDFLAGS) $(INCLUDES) -fopenmp
-
 clean:
-	     -rm *.o marketRisk
+	     -rm *.o OptionPricing

@@ -1,6 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <iostream>
 #include "BlackScholes.h"
+#include "HullWhite.h"
 #include <unordered_map>
 
 int main(){
