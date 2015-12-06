@@ -2,9 +2,52 @@
 #include <iostream>
 #include "BlackScholes.h"
 #include "HullWhite.h"
+//#include "BondUtilities.h"
+#include "YieldSpline.h"
 #include <unordered_map>
 
+
 int main(){
+
+  int n=29;//number of test yields
+  std::vector<SpotValue> testYield;
+  Date currDate;
+  for(int i=0; i<n; ++i){
+    testYield.push_back(SpotValue(currDate+(i+1), (i+1)*.001));
+  }
+  YieldSpline yld(testYield);
+  std::vector<double> couponTimes(5);
+  couponTimes[0]=.5;
+  couponTimes[1]=1;
+  couponTimes[2]=1.5;
+  couponTimes[3]=2;
+  couponTimes[4]=2.5;
+  //AutoDiff price=Bond_Price(AutoDiff(.03, 1), .4, .04, .3, 1, yld);
+  //std::cout<<price.getStandard()<<", "<<price.getDual()<<std::endl;
+  //std::cout<<"Expectation: "<<muR(.03, .4, .04, .3, 1, yld)<<std::endl;
+  std::cout<<Coupon_Bond_Put(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
+  std::cout<<Coupon_Bond_Call(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
+
+  /*const auto& r_t,
+  const auto& a,
+  const auto& sigma,
+  const auto& strike,
+  const auto& t,
+  const auto& T,
+  const std::vector<auto>& couponTimes,
+  const auto& couponRate,
+  auto& yieldClass*/
+  /*auto Bond_Price(
+    auto& r_t,
+    auto& a,
+    auto& sigma,
+    auto& t,
+    auto& T,
+    auto& yieldClass
+  )*/
+
+
+
   std::unordered_map<std::string, AutoDiff> parameters;
   parameters.insert({"Underlying", AutoDiff(50, 0)});
   parameters.insert({"Strike", AutoDiff(50, 0)});

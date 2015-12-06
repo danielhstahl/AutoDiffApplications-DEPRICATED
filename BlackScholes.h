@@ -2,21 +2,20 @@
 #define __BLACKSCHOLES_H_INCLUDED__
 #include <cmath>
 #include "AutoDiff.h"
-#include <assert.h>  
+#include <assert.h>
+
+auto BSCall(const auto&,/*underlying*/
+            const auto&, /*discount factor (in pure BS, discount=e^{-rt}) */
+            const auto&, /*strike*/
+            const auto&, /*volatility*/
+            const auto& /*maturity*/
+);
+auto BSPut(const auto&,/*underlying*/
+           const auto&, /*discount factor (in pure BS, discount=e^{-rt}) */
+           const auto&, /*strike*/
+           const auto&, /*volatility*/
+           const auto& /*maturity*/
+);
 #include "BlackScholes.hpp"
-
-auto BSCall(auto&,/*underlying*/
-            auto&, /*discount factor (in pure BS, discount=e^{-rt}) */
-            auto&, /*strike*/
-            auto&, /*volatility*/
-            auto& /*maturity*/
-);
-auto BSPut(auto&,/*underlying*/
-           auto&, /*discount factor (in pure BS, discount=e^{-rt}) */
-           auto&, /*strike*/
-           auto&, /*volatility*/
-           auto& /*maturity*/
-);
-
 
 #endif
