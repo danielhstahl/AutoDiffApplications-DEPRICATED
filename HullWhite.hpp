@@ -267,45 +267,23 @@ auto Swap_Rate(
   }
   return num/(delta*denominator);
 }
-
-auto Swaption(/*TODO!  most of this function!*/
+template<typename optionMaturity> /*this appears to be working.  Though not easy to test except by reasonability */
+auto Swaption(
   const auto& r_t,
   const auto& a,
   const auto& sigma,
+  const auto& strike,
   const auto& t, /*future time*/
   const auto& T, /*swap maturity*/
-  const auto& TM, /*option maturity*/
+  const optionMaturity& TM, /*option maturity*/
   const auto& delta, /*tenor of the floating rate*/
-  const auto& strike,
   auto& yieldClass
 ){
-  Newton nt;
-  //int n=cashFlowFimes.size();
-  //std::vector<double> c(n);
-  //c[0]=k*(cashFlowFimes[0]-optMat);
-  //for(int i=1; i<n; i++){
-  //  c[i]=k*(cashFlowFimes[i]-cashFlowFimes[i-1]);
-  //}
-  //c[n-1]=c[n-1]+1;
-  //double guess=r;
-  nt.zeros([&](double r){
-    double retVal=0;
-    for(int i=0; i<n; i++){
-      retVal+=c[i]*Bond_Price(r, optMat, cashFlowFimes[i]);
-    }
-    return retVal-1;
-  },guess);
-  double retVal=0;
-  //std::cout<<"tfut: "<<tFut<<" optMat: "<<optMat<<std::endl;
-//  std::cout<<cashFlows[0]<<std::endl;
-  //std::cout<<Bond_Put(r, tFut, 1, 1, optMat)<<std::endl;
-  for(int i=0; i<n; i++){
-    /*if(isnan(c[i]*Bond_Put(r, tFut, Bond_Price(guess, optMat, cashFlows[i]), cashFlows[i], optMat))){
-      std::cout<<"i: "<<i<<" tfut: "<<tFut<<" guess: "<<guess<<" optMat: "<<optMat<<"cashFlowi: "<<cashFlows[i]<<std::endl;
-    }*/
-    retVal+=c[i]*Bond_Put(r, tFut, Bond_Price(guess, optMat, cashFlowFimes[i]), cashFlowFimes[i], optMat);
-    //std::cout<<"retVal: "<<retVal<<" i: "<<i<<std::endl;
+  assert(T>TM);
+  int numPayments=(T-TM)/delta+1; //starts at TM.
+  std::vector<optionMaturity> couponTimes;
+  for(int i=0; i<numPayments; ++i){
+    couponTimes.push_back(TM+(i+1)*delta);
   }
-  //std::cout<<retVal<<std::endl;
-  return retVal;
+  return Coupon_Bond_Put(r_t, a, sigma, 1, t, TM, couponTimes, strike*delta, yieldClass);//swaption is equal to put on coupon bond with coupon=swaption strike*delta and strike 1.
 }

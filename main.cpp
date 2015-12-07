@@ -27,6 +27,9 @@ int main(){
   //std::cout<<"Expectation: "<<muR(.03, .4, .04, .3, 1, yld)<<std::endl;
   std::cout<<Coupon_Bond_Put(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
   std::cout<<Coupon_Bond_Call(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
+  std::cout<<Swap_Rate(.03, .4, .04, 1, 5, .25, yld)<<std::endl;
+  std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
+
 
   /*const auto& r_t,
   const auto& a,

@@ -166,6 +166,18 @@ auto Swap_Rate(
   const auto&, /*tenor of the floating rate*/
   auto&/*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/
 );
+template<typename optionMaturity>
+auto Swaption(
+  const auto&, /*r_t*/
+  const auto&,/*speed of mean reversion*/
+  const auto&, /*volatility */
+  const auto&, /*strike*/
+  const auto&, /*future time*/
+  const auto&, /*swap maturity*/
+  const optionMaturity&, /*option maturity*/
+  const auto&, /*tenor of the floating rate*/
+  auto& /*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/
+);
 #include "HullWhite.hpp"
 
 #endif
