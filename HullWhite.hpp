@@ -267,6 +267,28 @@ auto Swap_Rate(
   }
   return num/(delta*denominator);
 }
+
+auto Swap_Price( 
+  const auto& r_t,
+  const auto& a,
+  const auto& sigma,
+  const auto& t, /*future time*/
+  const auto& T, /*swap maturity*/
+  const auto& delta, /*tenor of the floating rate*/
+  const auto& rate,
+  auto& yieldClass
+){
+  int numPayments=floor((T-t)/delta)+1; //this should be an integer if t lands on a tenor date
+  auto firstExchangeDate=T-(numPayments-1)*delta;    
+  auto swap=Bond_Price(r_t, a, sigma, t, firstExchangeDate, yieldClass)/delta-Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta, yieldClass)*rate;//(1/delta+rate);
+  for(int i=2; i<numPayments; ++i){
+    swap+=Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta*(i), yieldClass)*(-rate);
+  }
+  swap+=Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta*(numPayments), yieldClass)*(-rate-1.0/delta);
+  return swap;
+}
+
+
 template<typename optionMaturity> /*this appears to be working.  Though not easy to test except by reasonability */
 auto Swaption(
   const auto& r_t,
@@ -287,3 +309,9 @@ auto Swaption(
   }
   return Coupon_Bond_Put(r_t, a, sigma, 1, t, TM, couponTimes, strike*delta, yieldClass);//swaption is equal to put on coupon bond with coupon=swaption strike*delta and strike 1.
 }
+
+
+
+
+
+

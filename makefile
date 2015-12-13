@@ -1,5 +1,5 @@
 LDFLAGS=-L../NewtonOptimization -lNewton -L../DateUtilities -lDate  -L../eigen  -L../BinomialTree -lTree -L../AutoDiff -lAutoDiff
-INCLUDES=-I../NewtonOptimization -I../DateUtilities -I../FixedIncomeUtilities -I../eigen -I../BinomialTree -I../rapidjson -I../AutoDiff
+INCLUDES=-I../NewtonOptimization -I../DateUtilities -I../FixedIncomeUtilities -I../eigen -I../BinomialTree -I../rapidjson -I../AutoDiff -I../MonteCarlo
 
 OptionPricing: main.o
 	g++ -std=c++14 -O3  -w -fPIC main.o  $(LDFLAGS) $(INCLUDES) -o OptionPricing -fopenmp

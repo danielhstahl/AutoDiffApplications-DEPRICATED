@@ -3,6 +3,7 @@
 #include "BlackScholes.h"
 #include "HullWhite.h"
 //#include "BondUtilities.h"
+#include "CurveFeatures.h"
 #include "YieldSpline.h"
 #include <unordered_map>
 
@@ -22,34 +23,18 @@ int main(){
   couponTimes[2]=1.5;
   couponTimes[3]=2;
   couponTimes[4]=2.5;
-  //AutoDiff price=Bond_Price(AutoDiff(.03, 1), .4, .04, .3, 1, yld);
-  //std::cout<<price.getStandard()<<", "<<price.getDual()<<std::endl;
-  //std::cout<<"Expectation: "<<muR(.03, .4, .04, .3, 1, yld)<<std::endl;
-  std::cout<<Coupon_Bond_Put(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
-  std::cout<<Coupon_Bond_Call(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
-  std::cout<<Swap_Rate(.03, .4, .04, 1, 5, .25, yld)<<std::endl;
-  std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
+
+  //std::cout<<Coupon_Bond_Put(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
+  //std::cout<<Coupon_Bond_Call(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
+    auto swapRate=Swap_Rate(.03, .4, .04, 1, 5, .25, yld);
+  std::cout<<swapRate<<std::endl;
+    std::cout<<Swap_Price(.03, .4, .04, 1, 5, .25, swapRate, yld)<<std::endl;
+    
+    
+  //std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
 
 
-  /*const auto& r_t,
-  const auto& a,
-  const auto& sigma,
-  const auto& strike,
-  const auto& t,
-  const auto& T,
-  const std::vector<auto>& couponTimes,
-  const auto& couponRate,
-  auto& yieldClass*/
-  /*auto Bond_Price(
-    auto& r_t,
-    auto& a,
-    auto& sigma,
-    auto& t,
-    auto& T,
-    auto& yieldClass
-  )*/
-
-
+  
 
   std::unordered_map<std::string, AutoDiff> parameters;
   parameters.insert({"Underlying", AutoDiff(50, 0)});
