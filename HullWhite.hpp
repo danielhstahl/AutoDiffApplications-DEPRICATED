@@ -132,6 +132,7 @@ auto Bond_Call(/*The price of a call option on zero coupon bond under Hull White
     T /*maturity*/
   );
 }
+
 auto Coupon_Bond_Call(/*The price of a call option on coupon bond under Hull White...uses jamshidian's trick*/
   const auto& r_t,
   const auto& a,
@@ -145,7 +146,7 @@ auto Coupon_Bond_Call(/*The price of a call option on coupon bond under Hull Whi
 ){
   Newton nt;
   int n=couponTimes.size();
-  auto guess=r_t;
+  double guess=.03;//r_t;
   nt.zeros([&](auto &r){
     return Coupon_Bond_Price(r, a, sigma, T, couponTimes, couponRate, yieldClass)-strike; //T is "future" time since bond is priced at opion maturity
   }, guess);
@@ -204,7 +205,9 @@ auto Coupon_Bond_Put(/*The price of a put option on coupon bond under Hull White
 ){
   Newton nt;
   int n=couponTimes.size();
-  auto guess=r_t;
+  //auto guess=r_t;
+    
+    double guess=.03;
   nt.zeros([&](auto &r){
     return Coupon_Bond_Price(r, a, sigma, T, couponTimes, couponRate, yieldClass)-strike; //T is "future" time since bond is priced at opion maturity
   }, guess);

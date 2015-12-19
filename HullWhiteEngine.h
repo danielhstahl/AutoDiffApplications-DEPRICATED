@@ -2,6 +2,7 @@
 #define __HULLWHITEENGINE_H_INCLUDED__
 #include <cmath>
 #include "HullWhite.h"
+#include "Date.h"
 #include "CurveFeatures.h" 
 #include "YieldSpline.h"
 
@@ -25,32 +26,32 @@
     const int type; //types are defined where?
      
  };*/
+
+
 template<typename Number> //autodiff or double
 class HullWhiteEngine{
     private:
-        YieldSpline *yld;//pointer to yield class
+        //YieldSpline *yld;//pointer to yield class
         Number a;
         Number sigma;
+        Number r;
     public:
         HullWhiteEngine();    
-        HullWhiteEngine(Number&, Number&);    
+        //HullWhiteEngine(Number&, Number&);  
+        void setSigma(Number&);
+        void setReversion(Number&);
+        //void setYield(auto*);
+        //void setShortRate(auto&);
         auto HullWhitePrice(
-            AssetFeatures& asset, 
-            auto& rate, 
-            auto& futureTime
+            AssetFeatures&, 
+            auto&, //rate
+            Date&, //future time,
+            Date&, //asOfDate
+            YieldSpline& //yield class
         );
-    {
-        switch(asset.type){
-                case BOND:
-                    return Bond_Price(rate, )
-                case EURODOLLARFUTURE:
-
-                case COUPONBOND:
-
-            }
-    }
+    
 };
-
+#include "HullWhiteEngine.hpp"
 
 
 

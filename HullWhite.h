@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <vector>
 #include <unordered_map>
-#include <functional>
+//#include <functional>
 #include "AutoDiff.h"
 #include "BondUtilities.h"
 #include "BlackScholes.h" //for option pricing
@@ -100,6 +100,7 @@ auto Coupon_Bond_Call(/*The price of a call option on coupon bond under Hull Whi
   const auto&, /*volatility*/
   const auto&, /*strike*/
   const auto&, /*future time*/
+    const auto&, //option maturity
   const std::vector<auto>&, /*these are coupon times FROM 0!  these should be in order but dont have to be*/
   const auto&, /* coupon rate */
   auto& /*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/
@@ -128,6 +129,7 @@ auto Coupon_Bond_Put(/*The price of a put option on coupon bond under Hull White
   const auto&, /*volatility*/
   const auto&, /*strike*/
   const auto&, /*future time*/
+    const auto&, //option maturity
   const std::vector<auto>&, /*these are coupon times FROM 0!  these should be in order but dont have to be*/
   const auto&, /*coupon rate*/
   auto& /*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/

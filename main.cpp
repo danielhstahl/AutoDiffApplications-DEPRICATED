@@ -1,16 +1,24 @@
 #define _USE_MATH_DEFINES
 #include <iostream>
 #include "BlackScholes.h"
-#include "HullWhite.h"
-//#include "BondUtilities.h"
+
+#include "HullWhiteEngine.h"
+#include <string>
+#include "YieldIO.h"
+#include "RealWorldMeasure.h"
 #include "CurveFeatures.h"
 #include "YieldSpline.h"
 #include <unordered_map>
-
+#include "HandlePath.h" //for creating sample paths
+#include "MC.h" //monte carlo
+#include "SimulateNorm.h"
+#include "document.h" //rapidjson
+#include "writer.h" //rapidjson
+#include "stringbuffer.h" //rapidjson
 
 int main(){
 
-  int n=29;//number of test yields
+  /*int n=29;//number of test yields
   std::vector<SpotValue> testYield;
   Date currDate;
   for(int i=0; i<n; ++i){
@@ -22,21 +30,106 @@ int main(){
   couponTimes[1]=1;
   couponTimes[2]=1.5;
   couponTimes[3]=2;
-  couponTimes[4]=2.5;
+  couponTimes[4]=2.5;*/
 
   //std::cout<<Coupon_Bond_Put(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
   //std::cout<<Coupon_Bond_Call(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
-    auto swapRate=Swap_Rate(.03, .4, .04, 1, 5, .25, yld);
+    /*auto swapRate=Swap_Rate(.03, .4, .04, 1, 5, .25, yld);
   std::cout<<swapRate<<std::endl;
-    std::cout<<Swap_Price(.03, .4, .04, 1, 5, .25, swapRate, yld)<<std::endl;
+    std::cout<<Swap_Price(.03, .4, .04, 1, 5, .25, swapRate, yld)<<std::endl;*/
     
     
   //std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
+    Date currDate; 
+    YieldSpline yld;
+    double b;//long run average
+    populateYieldFromExternalSource(currDate, yld, b);//this will wait from input from external source
+    yld.getSpotCurve();//send data to node
+    yld.getForwardCurve(); //send data ot node
+    
+    HullWhiteEngine<double> HW;
+    //HW.setYield(&yld);
+    double r0=yld.getShortRate(); //note we can change this here to an AutoDiff if we want sensitivities
+    //HW.setShortRate(r0);
+    SimulateNorm rNorm;
+    
+    //std::cout<<"r0: "<<r0<<std::endl;
+    
+    
+    
+    MC<double> monteC;
+    //std::unordered_map<std::string, double> parameters;
+    
+    std::string parameters;
+    for (parameters; std::getline(std::cin, parameters);) {
+        break;
+    }
+    //std::cout<<parameters<<std::endl;
+    rapidjson::Document parms;
 
+    parms.Parse(parameters.c_str());//yield data
+    parameters.clear();
+    
+    
 
-  
+    std::vector<AssetFeatures> portfolio; 
+    AssetFeatures asset;
+    //parse the string that came in
+    currDate.setScale("year");
+    if(parms.FindMember("T")!=parms.MemberEnd()){
+        asset.Maturity=currDate+parms["T"].GetDouble();
+    }
+    if(parms.FindMember("k")!=parms.MemberEnd()){
+        asset.Strike=parms["k"].GetDouble();
+    }
+    if(parms.FindMember("delta")!=parms.MemberEnd()){
+        asset.Tenor=parms["delta"].GetDouble();
+    }
+    if(parms.FindMember("Tm")!=parms.MemberEnd()){
+        asset.UnderlyingMaturity=currDate+parms["Tm"].GetDouble();
+    }
+    double a=parms["a"].GetDouble(); //can be made autodiff too
+    double sigma=parms["sigma"].GetDouble(); //can be made autodiff too
+    HW.setSigma(sigma);
+    HW.setReversion(a);
+    
+    currDate.setScale("day");
+    Date PortfolioMaturity;
+    if(parms.FindMember("t")!=parms.MemberEnd()){
+        Date PortfolioMaturity=currDate+parms["t"].GetInt();
+    }
+    int m=0;  
+    if(parms.FindMember("n")!=parms.MemberEnd()){
+        m=parms["n"].GetInt();
+    }
+    monteC.setM(m);
+    portfolio.push_back(asset);
+    /*auto retFunction=[&](AssetFeatures& asset, auto& rate, Date& maturity, Date& asOfDate){
+        return HW.HullWhitePrice(asset, rate, maturity, asOfDate, yld);
+    };*/
+    /*auto generateFunction=[&](const auto& currVal, const auto& time){
+        double vl=rNorm.getNorm();
+        return generateRealWorld(currVal, time, a, b, sigma, vl);
+    };*/ 
+    //double myVal=retFunction(asset, r0, PortfolioMaturity, currDate);
+    //std::cout<<"myVal: "<<myVal<<std::endl;
+    std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity);  
+    monteC.simulateDistribution([&](){
+        return executePortfolio(portfolio, currDate, 
+            [&](const auto& currVal, const auto& time){
+                double vl=rNorm.getNorm();
+                return generateVasicek(currVal, time, a, b, sigma, vl);
+            },
+            r0,  
+            path,  
+            [&](AssetFeatures& asset, auto& rate, Date& maturity,   Date& asOfDate){
+                return HW.HullWhitePrice(asset, rate, maturity, asOfDate, yld);
+            }
+        );
+    });   
 
-  std::unordered_map<std::string, AutoDiff> parameters;
+    
+  /*std::unordered_map<std::string, AutoDiff> parameters;
   parameters.insert({"Underlying", AutoDiff(50, 0)});
   parameters.insert({"Strike", AutoDiff(50, 0)});
   parameters.insert({"Maturity", AutoDiff(1, 0)});
@@ -63,5 +156,5 @@ int main(){
   AutoDiff Call=BSCall(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
   AutoDiff Put=BSPut(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
   std::cout<<"Call Price: "<<Call.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Call.getDual()<<std::endl;
-  std::cout<<"Put Price: "<<Put.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Put.getDual()<<std::endl;
+  std::cout<<"Put Price: "<<Put.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Put.getDual()<<std::endl;*/
 }
