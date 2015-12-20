@@ -251,7 +251,7 @@ auto EuroDollarFuture(
   auto& yieldClass
 ){
   auto aTTDelta=A(a, T, T+delta);
-  return exp(aTTDelta*muR(r_t, a, sigma, t, T, yieldClass)+.5*aTTDelta*aTTDelta*varianceR(a, sigma, t, T)-C(a, sigma, t, T, yieldClass));
+  return (exp(aTTDelta*muR(r_t, a, sigma, t, T, yieldClass)+.5*aTTDelta*aTTDelta*varianceR(a, sigma, t, T)-C(a, sigma, t, T, yieldClass)-yieldClass.Yield(T)+yieldClass.Yield(T+delta))-1)/delta;
 }
 auto Swap_Rate(
   const auto& r_t,

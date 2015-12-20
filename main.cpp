@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <iostream>
 #include "BlackScholes.h"
-
+#include <cfloat>
 #include "HullWhiteEngine.h"
 #include <string>
 #include "YieldIO.h"
@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include "HandlePath.h" //for creating sample paths
 #include "MC.h" //monte carlo
+#include "Histogram.h" //bins data
 #include "SimulateNorm.h"
 #include "document.h" //rapidjson
 #include "writer.h" //rapidjson
@@ -40,7 +41,7 @@ int main(){
     
     
   //std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
-    Date currDate; 
+    Date currDate;  
     YieldSpline yld;
     double b;//long run average
     populateYieldFromExternalSource(currDate, yld, b);//this will wait from input from external source
@@ -50,84 +51,77 @@ int main(){
     HullWhiteEngine<double> HW;
     //HW.setYield(&yld);
     double r0=yld.getShortRate(); //note we can change this here to an AutoDiff if we want sensitivities
-    //HW.setShortRate(r0);
-    SimulateNorm rNorm;
-    
-    //std::cout<<"r0: "<<r0<<std::endl;
-    
-    
+    SimulateNorm rNorm;  
     
     MC<double> monteC;
     //std::unordered_map<std::string, double> parameters;
     
-    std::string parameters;
-    for (parameters; std::getline(std::cin, parameters);) {
-        break;
-    }
-    //std::cout<<parameters<<std::endl;
-    rapidjson::Document parms;
+    auto runParameters=[&](std::string& parameters){
+        rapidjson::Document parms;
+        parms.Parse(parameters.c_str());//yield data
+        parameters.clear();
+        std::vector<AssetFeatures> portfolio; 
+        AssetFeatures asset;
+        //parse the string that came in
+        currDate.setScale("year");
+        if(parms.FindMember("T")!=parms.MemberEnd()){
+            asset.Maturity=currDate+parms["T"].GetDouble();
+        }
+        if(parms.FindMember("k")!=parms.MemberEnd()){
+            asset.Strike=parms["k"].GetDouble();
+        }
+        if(parms.FindMember("delta")!=parms.MemberEnd()){
+            asset.Tenor=parms["delta"].GetDouble();
+        }
+        if(parms.FindMember("Tm")!=parms.MemberEnd()){
+            asset.UnderlyingMaturity=currDate+parms["Tm"].GetDouble();
+        }
+        asset.type=parms["asset"].GetInt();
+        double a=parms["a"].GetDouble(); //can be made autodiff too
+        double sigma=parms["sigma"].GetDouble(); //can be made autodiff too
+        HW.setSigma(sigma);
+        HW.setReversion(a);
 
-    parms.Parse(parameters.c_str());//yield data
-    parameters.clear();
-    
-    
+        currDate.setScale("day");
+        Date PortfolioMaturity; 
+        if(parms.FindMember("t")!=parms.MemberEnd()){
+            PortfolioMaturity=currDate+parms["t"].GetInt();
+        }
+        int m=0;  
+        if(parms.FindMember("n")!=parms.MemberEnd()){
+            m=parms["n"].GetInt();
+        }
+        monteC.setM(m);
+        portfolio.push_back(asset);
+        std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity);  
+        
+        monteC.simulateDistribution([&](){
+            return executePortfolio(portfolio, currDate, 
+                [&](const auto& currVal, const auto& time){
+                    double vl=rNorm.getNorm();
+                    return generateVasicek(currVal, time, a, b, sigma, vl);
+                }, 
+                r0,   
+                path,  
+                [&](AssetFeatures& asset, auto& rate, Date& maturity,   Date& asOfDate){
+                    return HW.HullWhitePrice(asset, rate, maturity, asOfDate, yld);
+                }
+            );
+        });   
 
-    std::vector<AssetFeatures> portfolio; 
-    AssetFeatures asset;
-    //parse the string that came in
-    currDate.setScale("year");
-    if(parms.FindMember("T")!=parms.MemberEnd()){
-        asset.Maturity=currDate+parms["T"].GetDouble();
+        std::vector<double> dist=monteC.getDistribution();
+        double min=DBL_MAX; //purposely out of order because actual min and max are found within the function
+        double max=DBL_MIN;
+        binAndSend(min, max, dist); //send histogram to node
+    }; 
+    while(true){
+        std::string parameters;
+        for (parameters; std::getline(std::cin, parameters);) {
+            break; 
+        }
+        runParameters(parameters);
     }
-    if(parms.FindMember("k")!=parms.MemberEnd()){
-        asset.Strike=parms["k"].GetDouble();
-    }
-    if(parms.FindMember("delta")!=parms.MemberEnd()){
-        asset.Tenor=parms["delta"].GetDouble();
-    }
-    if(parms.FindMember("Tm")!=parms.MemberEnd()){
-        asset.UnderlyingMaturity=currDate+parms["Tm"].GetDouble();
-    }
-    asset.type=parms["asset"].GetInt();
-    double a=parms["a"].GetDouble(); //can be made autodiff too
-    double sigma=parms["sigma"].GetDouble(); //can be made autodiff too
-    HW.setSigma(sigma);
-    HW.setReversion(a);
     
-    
-    
-    currDate.setScale("day");
-    Date PortfolioMaturity;
-    //std::cout<<parms["t"].GetInt()<<std::endl;
-    if(parms.FindMember("t")!=parms.MemberEnd()){
-        PortfolioMaturity=currDate+parms["t"].GetInt();
-    }
-    int m=0;  
-    if(parms.FindMember("n")!=parms.MemberEnd()){
-        m=parms["n"].GetInt();
-    }
-    monteC.setM(m);
-    portfolio.push_back(asset);
-    std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity); 
-     
-    
-    //std::cout<<Bond_Price(r0, a, sigma, PortfolioMaturity-currDate, asset.Maturity-currDate, yld)<<std::endl;
-    
-   // std::cout<<path[0]<<std::endl;
-    monteC.simulateDistribution([&](){
-        return executePortfolio(portfolio, currDate, 
-            [&](const auto& currVal, const auto& time){
-                double vl=rNorm.getNorm();
-                return generateVasicek(currVal, time, a, b, sigma, vl);
-            },
-            r0,  
-            path,  
-            [&](AssetFeatures& asset, auto& rate, Date& maturity,   Date& asOfDate){
-                return HW.HullWhitePrice(asset, rate, maturity, asOfDate, yld);
-            }
-        );
-    });   
-
     
   /*std::unordered_map<std::string, AutoDiff> parameters;
   parameters.insert({"Underlying", AutoDiff(50, 0)});
