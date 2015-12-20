@@ -88,15 +88,19 @@ int main(){
     if(parms.FindMember("Tm")!=parms.MemberEnd()){
         asset.UnderlyingMaturity=currDate+parms["Tm"].GetDouble();
     }
+    asset.type=parms["asset"].GetInt();
     double a=parms["a"].GetDouble(); //can be made autodiff too
     double sigma=parms["sigma"].GetDouble(); //can be made autodiff too
     HW.setSigma(sigma);
     HW.setReversion(a);
     
+    
+    
     currDate.setScale("day");
     Date PortfolioMaturity;
+    //std::cout<<parms["t"].GetInt()<<std::endl;
     if(parms.FindMember("t")!=parms.MemberEnd()){
-        Date PortfolioMaturity=currDate+parms["t"].GetInt();
+        PortfolioMaturity=currDate+parms["t"].GetInt();
     }
     int m=0;  
     if(parms.FindMember("n")!=parms.MemberEnd()){
@@ -104,16 +108,12 @@ int main(){
     }
     monteC.setM(m);
     portfolio.push_back(asset);
-    /*auto retFunction=[&](AssetFeatures& asset, auto& rate, Date& maturity, Date& asOfDate){
-        return HW.HullWhitePrice(asset, rate, maturity, asOfDate, yld);
-    };*/
-    /*auto generateFunction=[&](const auto& currVal, const auto& time){
-        double vl=rNorm.getNorm();
-        return generateRealWorld(currVal, time, a, b, sigma, vl);
-    };*/ 
-    //double myVal=retFunction(asset, r0, PortfolioMaturity, currDate);
-    //std::cout<<"myVal: "<<myVal<<std::endl;
-    std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity);  
+    std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity); 
+     
+    
+    //std::cout<<Bond_Price(r0, a, sigma, PortfolioMaturity-currDate, asset.Maturity-currDate, yld)<<std::endl;
+    
+   // std::cout<<path[0]<<std::endl;
     monteC.simulateDistribution([&](){
         return executePortfolio(portfolio, currDate, 
             [&](const auto& currVal, const auto& time){

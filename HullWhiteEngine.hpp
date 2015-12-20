@@ -32,6 +32,7 @@ auto HullWhiteEngine<Number>::HullWhitePrice(
         YieldSpline& yld
     ){
     std::vector<double> coupons;
+    //std::cout<<rate<<std::endl;
     switch(asset.type){
             
         case BOND:
