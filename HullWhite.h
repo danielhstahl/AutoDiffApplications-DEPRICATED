@@ -6,6 +6,7 @@
 #include <vector>
 #include <unordered_map>
 //#include <functional>
+#include "Tree.h"
 #include "AutoDiff.h"
 #include "BondUtilities.h"
 #include "BlackScholes.h" //for option pricing
@@ -192,6 +193,20 @@ auto Swap_Price(
   const auto&, /*swap rate*/
   auto& /*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/
 );
+
+template<typename optionMaturity> /* */
+auto testSwaption(
+  const auto&,
+  const auto&,
+  const auto&,
+  const auto&,
+  const auto&, /*future time*/
+  const auto&, /*swap maturity*/
+  const optionMaturity&, /*option maturity*/
+  const auto&, /*tenor of the floating rate*/
+  auto&
+);
+
 #include "HullWhite.hpp"
 
 

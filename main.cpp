@@ -25,37 +25,29 @@ int main(){
   for(int i=0; i<n; ++i){
     testYield.push_back(SpotValue(currDate+(i+1), (i+1)*.001));
   }
-  YieldSpline yld(testYield);
+  YieldSpline yld(testYield, currDate);
   std::vector<double> couponTimes(5);
   couponTimes[0]=.5;
   couponTimes[1]=1;
   couponTimes[2]=1.5;
   couponTimes[3]=2;
-  couponTimes[4]=2.5;*/
-
-  //std::cout<<Coupon_Bond_Put(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
-  //std::cout<<Coupon_Bond_Call(.03, .4, .04, 1, .3, 1, couponTimes, .04, yld)<<std::endl;
-    /*auto swapRate=Swap_Rate(.03, .4, .04, 1, 5, .25, yld);
-  std::cout<<swapRate<<std::endl;
-    std::cout<<Swap_Price(.03, .4, .04, 1, 5, .25, swapRate, yld)<<std::endl;*/
+  couponTimes[4]=2.5;
+ 
+    
+  std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
+  std::cout<<testSwaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;*/
     
     
-  //std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
     Date currDate;  
     YieldSpline yld;
     double b;//long run average
     populateYieldFromExternalSource(currDate, yld, b);//this will wait from input from external source
     yld.getSpotCurve();//send data to node
     yld.getForwardCurve(); //send data ot node
-    
     HullWhiteEngine<double> HW;
-    //HW.setYield(&yld);
     double r0=yld.getShortRate(); //note we can change this here to an AutoDiff if we want sensitivities
     SimulateNorm rNorm;  
-    
     MC<double> monteC;
-    //std::unordered_map<std::string, double> parameters;
-    
     auto runParameters=[&](std::string& parameters){
         rapidjson::Document parms;
         parms.Parse(parameters.c_str());//yield data

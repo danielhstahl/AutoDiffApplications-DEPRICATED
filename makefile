@@ -1,4 +1,4 @@
-LDFLAGS=-L../NewtonOptimization -lNewton -L../DateUtilities -lDate  -L../eigen  -L../BinomialTree -lTree -L../AutoDiff -lAutoDiff 
+LDFLAGS=-L../NewtonOptimization -lNewton -L../DateUtilities -lDate  -L../eigen   -L../AutoDiff -lAutoDiff 
 INCLUDES=-I../NewtonOptimization -I../DateUtilities -I../FixedIncomeUtilities -I../eigen -I../BinomialTree -I../rapidjson -I../AutoDiff -I../MonteCarlo
 
 OptionPricing: main.o

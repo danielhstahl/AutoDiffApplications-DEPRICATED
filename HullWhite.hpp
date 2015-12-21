@@ -251,7 +251,7 @@ auto EuroDollarFuture(
   auto& yieldClass
 ){
   auto aTTDelta=A(a, T, T+delta);
-  return (exp(aTTDelta*muR(r_t, a, sigma, t, T, yieldClass)+.5*aTTDelta*aTTDelta*varianceR(a, sigma, t, T)-C(a, sigma, t, T, yieldClass)-yieldClass.Yield(T)+yieldClass.Yield(T+delta))-1)/delta;
+  return (exp(aTTDelta*muR(r_t, a, sigma, t, T, yieldClass)+.5*aTTDelta*aTTDelta*varianceR(a, sigma, t, T)-C(a, sigma, T, T+delta, yieldClass))-1)/delta;
 }
 auto Swap_Rate(
   const auto& r_t,
@@ -313,8 +313,50 @@ auto Swaption(
   return Coupon_Bond_Put(r_t, a, sigma, 1, t, TM, couponTimes, strike*delta, yieldClass);//swaption is equal to put on coupon bond with coupon=swaption strike*delta and strike 1.
 }
 
+template<typename optionMaturity> /* */
+auto testSwaption(
+  const auto& r_t,
+  const auto& a,
+  const auto& sigma,
+  const auto& strike,
+  const auto& t, /*future time*/
+  const auto& T, /*swap maturity*/
+  const optionMaturity& TM, /*option maturity*/
+  const auto& delta, /*tenor of the floating rate*/
+  auto& yieldClass
+){
+    assert(T>TM);
+    int numPayments=(T-TM)/delta+1; //starts at TM.
+    std::vector<optionMaturity> couponTimes;
+    for(int i=0; i<numPayments; ++i){
+        couponTimes.push_back(TM+(i+1)*delta);
+    }
 
-
-
-
+    auto alphaFunction=[&](double t, const auto& currVal, double dt){
+        return muR(currVal, a, sigma, t, t+dt, yieldClass)/sigma;  
+    };
+    auto sigmaFunction=[&](double t, const auto& currVal, double dt){
+        return 0;//interesting  
+    };
+    auto fInv=[&](const auto& currVal){
+        return currVal*sigma;
+    };
+    auto payoff=[&](const auto& currVal){
+        auto rate=Swap_Rate(currVal, a, sigma, TM, T, delta, yieldClass);
+        if(rate>strike){
+            return Swap_Rate(currVal, a, sigma, TM, T, delta, yieldClass)-strike;
+        }
+        else{
+            return 0.0;
+        } 
+    };
+    auto discount=[&](double t, const auto& currVal, double dt){
+        return exp(-currVal*dt);  
+    };
+    return execute(alphaFunction, sigmaFunction, fInv, payoff, discount, 200, TM-t, r_t);
+     //template<typename Number>
+//auto execute(auto& alpha,  auto& sigma,  auto& fInv, auto& payoff, auto& discount, int m, double t, Number& x0) //alpha=alpha/sigma,sigma=sigma'(x), finv=the inverse of the function g=\int 1/sig(x) dx
+    
+  //return Coupon_Bond_Put(r_t, a, sigma, 1, t, TM, couponTimes, strike*delta, yieldClass);//swaption is equal to put on coupon bond with coupon=swaption strike*delta and strike 1.
+}
 
