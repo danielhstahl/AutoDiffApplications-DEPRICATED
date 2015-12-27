@@ -19,23 +19,51 @@
 
 int main(){
 
-  /*int n=29;//number of test yields
-  std::vector<SpotValue> testYield;
-  Date currDate;
-  for(int i=0; i<n; ++i){
-    testYield.push_back(SpotValue(currDate+(i+1), (i+1)*.001));
-  }
-  YieldSpline yld(testYield, currDate);
-  std::vector<double> couponTimes(5);
+    /*int n=29;//number of test yields
+    std::vector<SpotValue> testYield;
+    double currRate=.02;
+    double sig=.02;
+    double a=.3;
+    double b=.04;
+    
+    auto bndV=[&](double r, double a, double b, double sigma, double t){
+        double at=(1-exp(-a*t))/a;
+        double ct=sigma*sigma;
+        ct=(b-ct/(2*a*a))*(at-t)-ct*at*at/(4*a);
+        return exp(-at*r+ct);
+    };
+    
+    
+    Date currDate; 
+    for(int i=0; i<n; ++i){
+        testYield.push_back(SpotValue(currDate+(i+1), (1/bndV(currRate, a, b, sig, (currDate+(i+1))-currDate)-1)/((currDate+(i+1))-currDate)));
+      //std::cout<<"price: "<<bndV(currRate, a, b, sig, (currDate+(i+1))-currDate)<<std::endl;
+  } 
+  YieldSpline yld(testYield, currDate, currRate); 
+    //std::cout<<exp(-yld.Yield(2))<<std::endl;
+  std::vector<double> couponTimes(5); 
   couponTimes[0]=.5;
   couponTimes[1]=1;
   couponTimes[2]=1.5;
   couponTimes[3]=2;
   couponTimes[4]=2.5;
- 
-    
-  std::cout<<Swaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;
-  std::cout<<testSwaption(.03, .4, .04, .04, .3, 5, 1, .25, yld)<<std::endl;*/
+    std::cout<<bndV(currRate, a, b, sig, 1)<<std::endl;
+    std::cout<<exp(-yld.Yield(1))<<std::endl;
+    //std::cout<<yld.Forward(0)<<std::endl;
+    std::cout<<Bond_Price(currRate, a, sig, 0, 1, yld)<<std::endl;
+    //double bndt=Bond_Price(1, yld);
+    //std::cout<<"Price: "<<Bond_Price(1.0, yld)<<std::endl;
+
+    //double sig=.02;
+    double strike=.04;
+    double futureTime=0;
+    double swpMaturity=5.0;
+    double optMaturity=1.0;
+    double delta=.25;
+    std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
+    std::cout<<testSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
+    //double swprate=Swap_Rate(currRate, a, sig, .25, swpMaturity, delta, yld);
+    //std::cout<<Swap_Price(currRate, a, sig, 0.0, swpMaturity, delta, .03, yld)<<std::endl;*/
     
     
     Date currDate;  

@@ -20,7 +20,7 @@ auto C( /*C(t, T) from the Hull White PDE...this may require taking a reference 
 ){
   auto sqr=A(a, t)-A(a, T);
   sqr=sqr*sqr;
-  return yieldClass.Yield(t)-yieldClass.Yield(T)-yieldClass.Forward(t)*A(a, t, T)-sigma*sigma*sqr*(exp(2*a*t)-1.0)/(4*a*a*a);
+  return yieldClass.Yield(t)-yieldClass.Yield(T)+yieldClass.Forward(t)*A(a, t, T)-sigma*sigma*sqr*(exp(2*a*t)-1.0)/(4*a*a*a);
 }
 auto T_Forward_Bond_Volatility( /*This is the volatility of a forward bond B(t, TM)/(B(t, T)), TM>T and can be used for zero coupon bond pricing using BS formula.  TM may equal T+delta, but must be manually added before calling this function*/
   const auto& a,/*Speed of mean reversion ("a")*/
@@ -262,7 +262,7 @@ auto Swap_Rate(
   const auto& delta, /*tenor of the floating rate*/
   auto& yieldClass
 ){
-  int numPayments=(T-t)/delta+1; //this should be an integer!  remember, T-t is the total swap length
+  int numPayments=floor((T-t)/delta)+1; //this should be an integer!  remember, T-t is the total swap length
   auto denominator=Bond_Price(r_t, a, sigma, t, T+delta, yieldClass); //final bond price
   auto num=1.0-denominator;
   for(int i=0; i<(numPayments-1); ++i){
@@ -283,11 +283,12 @@ auto Swap_Price(
 ){
   int numPayments=floor((T-t)/delta)+1; //this should be an integer if t lands on a tenor date
   auto firstExchangeDate=T-(numPayments-1)*delta;    
-  auto swap=Bond_Price(r_t, a, sigma, t, firstExchangeDate, yieldClass)/delta-Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta, yieldClass)*rate;//(1/delta+rate);
+  //auto swap=Bond_Price(r_t, a, sigma, t, firstExchangeDate, yieldClass)/delta-Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta, yieldClass)*rate;//(1/delta+rate);
+  auto swap=Bond_Price(r_t, a, sigma, t, firstExchangeDate, yieldClass)-Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta, yieldClass)*rate*delta;//(1/delta+rate);
   for(int i=2; i<numPayments; ++i){
-    swap+=Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta*(i), yieldClass)*(-rate);
+    swap+=Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta*(i), yieldClass)*(-rate*delta);
   }
-  swap+=Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta*(numPayments), yieldClass)*(-rate-1.0/delta);
+  swap+=Bond_Price(r_t, a, sigma, t, firstExchangeDate+delta*(numPayments), yieldClass)*(-rate*delta-1.0);
   return swap;
 }
 
@@ -305,12 +306,12 @@ auto Swaption(
   auto& yieldClass
 ){
   assert(T>TM);
-  int numPayments=(T-TM)/delta+1; //starts at TM.
+  int numPayments=floor((T-TM)/delta)+1; //starts at TM.
   std::vector<optionMaturity> couponTimes;
   for(int i=0; i<numPayments; ++i){
     couponTimes.push_back(TM+(i+1)*delta);
   }
-  return Coupon_Bond_Put(r_t, a, sigma, 1, t, TM, couponTimes, strike*delta, yieldClass);//swaption is equal to put on coupon bond with coupon=swaption strike*delta and strike 1.
+  return Coupon_Bond_Put(r_t, a, sigma, 1.0, t, TM, couponTimes, strike*delta, yieldClass);//swaption is equal to put on coupon bond with coupon=swaption strike*delta and strike 1.
 }
 
 template<typename optionMaturity> /* */
@@ -326,34 +327,34 @@ auto testSwaption(
   auto& yieldClass
 ){
     assert(T>TM);
-    int numPayments=(T-TM)/delta+1; //starts at TM.
-    std::vector<optionMaturity> couponTimes;
-    for(int i=0; i<numPayments; ++i){
-        couponTimes.push_back(TM+(i+1)*delta);
-    }
-
-    auto alphaFunction=[&](double t, const auto& currVal, double dt){
-        return muR(currVal, a, sigma, t, t+dt, yieldClass)/sigma;  
+    auto phi=[&](double ti){ //this can be made way more efficient by solving it once at for every ti
+        //auto expT=exp(-a*(ti-t));
+        auto sigs=sigma*sigma*(1-exp(-2*a*ti))/(2*a*a);
+        return yieldClass.Forward(ti)+sigs;//-sigs*expT-expT*yieldClass.Yield(t);
     };
-    auto sigmaFunction=[&](double t, const auto& currVal, double dt){
-        return 0;//interesting  
+    auto alphaFunction=[&](double t1, const auto& currVal, double dt){
+        return -(a*currVal)/sigma;
     };
-    auto fInv=[&](const auto& currVal){
-        return currVal*sigma;
+    auto sigmaFunction=[&](double t1, const auto& currVal, double dt){
+        return 0.0;//interesting  
     };
-    auto payoff=[&](const auto& currVal){
-        auto rate=Swap_Rate(currVal, a, sigma, TM, T, delta, yieldClass);
-        if(rate>strike){
-            return Swap_Rate(currVal, a, sigma, TM, T, delta, yieldClass)-strike;
+    
+    auto fInv=[&](double t1, const auto& currVal, double dt){
+        return sigma*currVal;//+phi(t+t1);
+    };
+    auto payoff=[&](double t1, const auto& currVal, double dt){
+        auto swp=Swap_Price(currVal+phi(t+t1), a, sigma, TM, T, delta, strike, yieldClass);
+        if(swp>0){
+            return swp;
         }
         else{
             return 0.0;
         } 
     };
-    auto discount=[&](double t, const auto& currVal, double dt){
-        return exp(-currVal*dt);  
+    auto discount=[&](double t1, const auto& currVal, double dt){
+        return exp(-(currVal+phi(t+t1))*dt);  
     };
-    return execute(alphaFunction, sigmaFunction, fInv, payoff, discount, 200, TM-t, r_t);
+    return execute(alphaFunction, sigmaFunction, fInv, payoff, discount, 1000, TM-t, r_t-phi(t));
      //template<typename Number>
 //auto execute(auto& alpha,  auto& sigma,  auto& fInv, auto& payoff, auto& discount, int m, double t, Number& x0) //alpha=alpha/sigma,sigma=sigma'(x), finv=the inverse of the function g=\int 1/sig(x) dx
     
