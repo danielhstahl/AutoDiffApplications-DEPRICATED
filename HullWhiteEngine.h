@@ -16,7 +16,7 @@
 #define CAPLET 7
 #define SWAP 8 
 #define SWAPTION 9
-
+#define AMERICANSWAPTION 10
 
  /*struct AssetFeatures{
     Date Maturity;

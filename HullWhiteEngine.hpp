@@ -67,6 +67,8 @@ auto HullWhiteEngine<Number>::HullWhitePrice(
             return Swap_Price(rate, a, sigma, futureTime-asOfDate, asset.Maturity-asOfDate, asset.Tenor, asset.Strike, yld);//swap rate is strike here...
         case SWAPTION:
             return Swaption(rate, a, sigma, asset.Strike, futureTime-asOfDate, asset.UnderlyingMaturity-asOfDate, asset.Maturity-asOfDate, asset.Tenor, yld);
+        case AMERICANSWAPTION:
+            return AmericanSwaption(rate, a, sigma, asset.Strike, futureTime-asOfDate, asset.UnderlyingMaturity-asOfDate, asset.Maturity-asOfDate, asset.Tenor, yld);
             
             
     }

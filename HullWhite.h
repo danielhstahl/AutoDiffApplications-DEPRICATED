@@ -37,6 +37,12 @@ auto C( /*C(t, T) from the Hull White PDE...this may require taking a reference 
   const auto&, /*T */
   auto& /*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/
 );
+auto phiT(
+    const auto&, /*speed of mean reversion*/
+    const auto&, /*interst rate volatility*/
+    const auto&, /*expectation horizon*/
+    auto& /*This is a yield class passed here...this should include member functions "Forward" and "Yield" and these should be the instantanoues forward rate and the continuously compounded zero coupon yield*/
+);
 auto muR(/*the expected value of r_t under risk neutral measure: E[r_T|t]*/
   const auto&, /*r_t*/
   const auto&, /*speed of mean reversion*/
@@ -195,7 +201,7 @@ auto Swap_Price(
 );
 
 template<typename optionMaturity> /* */
-auto testSwaption(
+auto AmericanSwaption(
   const auto&,
   const auto&,
   const auto&,

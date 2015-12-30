@@ -56,15 +56,16 @@ int main(){
 
     //double sig=.02;
     double strike=.04;
-    double futureTime=0;
-    double swpMaturity=5.0;
-    double optMaturity=1.0;
+    double futureTime=.5;
+    double swpMaturity=5.5;
+    double optMaturity=1.5;
     double delta=.25;
     std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
-    std::cout<<testSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
-    //double swprate=Swap_Rate(currRate, a, sig, .25, swpMaturity, delta, yld);
-    //std::cout<<Swap_Price(currRate, a, sig, 0.0, swpMaturity, delta, .03, yld)<<std::endl;*/
-    
+    std::cout<<Swaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
+    std::cout<<AmericanSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;    
+    std::cout<<AmericanSwaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;    
+  */
+        
     
     Date currDate;  
     YieldSpline yld;
@@ -167,8 +168,8 @@ int main(){
   }
   parameters.find(response)->second.setDual(1);
   AutoDiff discount=exp(-parameters.find("R")->second*parameters.find("Maturity")->second);
-  AutoDiff Call=BSCall(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
-  AutoDiff Put=BSPut(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second, parameters.find("Maturity")->second);
+  AutoDiff Call=BSCall(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second*sqrt(parameters.find("Maturity")->second));
+  AutoDiff Put=BSPut(parameters.find("Underlying")->second, discount, parameters.find("Strike")->second, parameters.find("Sigma")->second*sqrt(parameters.find("Maturity")->second));
   std::cout<<"Call Price: "<<Call.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Call.getDual()<<std::endl;
   std::cout<<"Put Price: "<<Put.getStandard()<<" Partial Derivative with respect to "<<response<<": "<<Put.getDual()<<std::endl;*/
 }
