@@ -8,7 +8,7 @@
 #include "stringbuffer.h" //rapidjson
 
 
-void populateYieldFromExternalSource(Date&, auto&, auto&);
+std::vector<SpotValue> populateYieldFromExternalSource(Date&, auto&, auto&);
 #include "YieldIO.hpp"
 
 #endif

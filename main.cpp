@@ -70,7 +70,8 @@ int main(){
     Date currDate;  
     YieldSpline yld;
     double b;//long run average
-    populateYieldFromExternalSource(currDate, yld, b);//this will wait from input from external source
+    double daysDiff;//years from now that libor rate goes till (typically 7 days divided by 360)
+    std::vector<SpotValue> historical=populateYieldFromExternalSource(currDate, yld, daysDiff);//this will wait from input from external source
     yld.getSpotCurve();//send data to node
     yld.getForwardCurve(); //send data ot node
     HullWhiteEngine<double> HW;
@@ -102,6 +103,7 @@ int main(){
         double sigma=parms["sigma"].GetDouble(); //can be made autodiff too
         HW.setSigma(sigma);
         HW.setReversion(a);
+        b=findHistoricalMean(historical, daysDiff, a);
 
         currDate.setScale("day");
         Date PortfolioMaturity; 

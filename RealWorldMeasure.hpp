@@ -1,4 +1,4 @@
-double findHistoricalMean(std::vector<SpotValue>& historicalRates, double shortRateTime){//assumes that real world rate process follows Vasicek
+double findHistoricalMean(std::vector<SpotValue>& historicalRates, double shortRateTime, double a){//assumes that real world rate process follows Vasicek
     int n=historicalRates.size();
     double dt=0;
     double b=0;
@@ -8,7 +8,7 @@ double findHistoricalMean(std::vector<SpotValue>& historicalRates, double shortR
         historicalRates[i+1].date.setScale("year");
         dt=historicalRates[i+1].date-historicalRates[i].date;
         historicalRates[i+1].value=convertLiborToContinuous(historicalRates[i+1].value, shortRateTime); //convert to continuous time
-        b+=(historicalRates[i+1].value-exp(-    dt)*historicalRates[i].value)/(1.0-exp(-dt));
+        b+=(historicalRates[i+1].value-exp(-    dt*a)*historicalRates[i].value)/(1.0-exp(-dt*a));
     }
     b=b/(n-1);
     return b;

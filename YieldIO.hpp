@@ -1,4 +1,4 @@
-void populateYieldFromExternalSource(Date& dt, auto& yldClass, auto& b){
+std::vector<SpotValue> populateYieldFromExternalSource(Date& dt, auto& yldClass, auto& daysPlus){
     std::string yieldData;
     std::string historicalData;
 
@@ -45,6 +45,9 @@ void populateYieldFromExternalSource(Date& dt, auto& yldClass, auto& b){
         }
     }
     yldClass.computeSimpleSwapSpline(LiborRates, SwapRates, dt);
-    b=findHistoricalMean(historical, dHistorical["daysPlus"].GetInt()/360.0);
+    daysPlus=dHistorical["daysPlus"].GetInt()/360.0;
+    return historical;
+    
+    //b=findHistoricalMean(historical, dHistorical["daysPlus"].GetInt()/360.0, a);
 }
     
