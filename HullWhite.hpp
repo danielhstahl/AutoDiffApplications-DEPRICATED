@@ -381,9 +381,6 @@ auto AmericanSwaption(
         }
         return exp(-(currVal+trackPhi.find(j)->second)*dt);  
     };
-    return execute(alphaFunction, sigmaFunction, fInv, payoff, discount, 100, TM-t, (r_t-phiT(a, sigma, t, yieldClass))/sigma);
-     //template<typename Number>
-//auto execute(auto& alpha,  auto& sigma,  auto& fInv, auto& payoff, auto& discount, int m, double t, Number& x0) //alpha=alpha/sigma,sigma=sigma'(x), finv=the inverse of the function g=\int 1/sig(x) dx
-    
+    return computeTree(alphaFunction, sigmaFunction, fInv, payoff, discount, 100, TM-t, (r_t-phiT(a, sigma, t, yieldClass))/sigma);
 }
 

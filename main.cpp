@@ -19,7 +19,7 @@
 
  int main(){
 
-   /*int n=29;//number of test yields
+  /* int n=29;//number of test yields
     std::vector<SpotValue> testYield;
     double currRate=.02;
     double sig=.02;
@@ -62,19 +62,23 @@
     double delta=.25;
      AutoDiff curr(currRate, 1.0);
     //std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;     
-    //std::cout<<Swaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
+    std::cout<<Swaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
     //std::cout<<AmericanSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;      
    
      std::cout<<AmericanSwaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;    
          
+     AutoDiff ev=Swaption(curr, a, sig, strike, 0.0, 4.5, .5, delta, yld);
+      
+    std::cout<<ev.getStandard()<<std::endl;  
+    std::cout<<ev.getDual()<<std::endl;    
     
      
     AutoDiff v=AmericanSwaption(curr, a, sig, strike, 0.0, 4.5, .5, delta, yld);  
     std::cout<<v.getStandard()<<std::endl;  
-    std::cout<<v.getDual()<<std::endl;    
-    */
+    std::cout<<v.getDual()<<std::endl; */  
+    
   
-        
+      
     Date currDate;  
     YieldSpline yld;
     double b;//long run average
