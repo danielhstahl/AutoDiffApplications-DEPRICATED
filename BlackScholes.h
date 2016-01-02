@@ -8,15 +8,13 @@ auto BSCall(
     const auto&,/*underlying*/
     const auto&, /*discount factor (in pure BS, discount=e^{-rt}) */
     const auto&, /*strike*/
-    const auto&, /*volatility*/
-    const auto& /*maturity*/
+    const auto& /*volatility*/
 );
 auto BSPut(
     const auto&,/*underlying*/
     const auto&, /*discount factor (in pure BS, discount=e^{-rt}) */
     const auto&, /*strike*/
-    const auto&, /*volatility*/
-    const auto& /*maturity*/
+    const auto& /*volatility*/
 );
 #include "BlackScholes.hpp"
 

@@ -17,9 +17,9 @@
 #include "writer.h" //rapidjson
 #include "stringbuffer.h" //rapidjson
 
-int main(){
+ int main(){
 
-    /*int n=29;//number of test yields
+   /*int n=29;//number of test yields
     std::vector<SpotValue> testYield;
     double currRate=.02;
     double sig=.02;
@@ -47,10 +47,10 @@ int main(){
   couponTimes[2]=1.5;
   couponTimes[3]=2;
   couponTimes[4]=2.5;
-    std::cout<<bndV(currRate, a, b, sig, 1)<<std::endl;
-    std::cout<<exp(-yld.Yield(1))<<std::endl;
+    //std::cout<<bndV(currRate, a, b, sig, 1)<<std::endl;
+    //std::cout<<exp(-yld.Yield(1))<<std::endl;
     //std::cout<<yld.Forward(0)<<std::endl;
-    std::cout<<Bond_Price(currRate, a, sig, 0, 1, yld)<<std::endl;
+    //std::cout<<Bond_Price(currRate, a, sig, 0, 1, yld)<<std::endl;
     //double bndt=Bond_Price(1, yld);
     //std::cout<<"Price: "<<Bond_Price(1.0, yld)<<std::endl;
 
@@ -60,13 +60,21 @@ int main(){
     double swpMaturity=5.5;
     double optMaturity=1.5;
     double delta=.25;
-    std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
-    std::cout<<Swaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
-    std::cout<<AmericanSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;    
-    std::cout<<AmericanSwaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;    
-  */
-        
+     AutoDiff curr(currRate, 1.0);
+    //std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;     
+    //std::cout<<Swaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
+    //std::cout<<AmericanSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;      
+   
+     std::cout<<AmericanSwaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;    
+         
     
+     
+    AutoDiff v=AmericanSwaption(curr, a, sig, strike, 0.0, 4.5, .5, delta, yld);  
+    std::cout<<v.getStandard()<<std::endl;  
+    std::cout<<v.getDual()<<std::endl;    
+    */
+  
+        
     Date currDate;  
     YieldSpline yld;
     double b;//long run average
@@ -145,6 +153,8 @@ int main(){
         runParameters(parameters);
     }
     
+    
+
     
   /*std::unordered_map<std::string, AutoDiff> parameters;
   parameters.insert({"Underlying", AutoDiff(50, 0)});

@@ -101,7 +101,7 @@ auto Coupon_Bond_Price(/*The coupon bond price under Hull White*/
   auto bondprice=Bond_Price(r_t, a, sigma, t, couponTimes[n-1], yieldClass)*(1+couponRate);
   for(int i=0; i<(n-1); ++i){
     if(couponTimes[i]>t){
-      bondprice+=Bond_Price(r_t, a, sigma, t, couponTimes[i], yieldClass)*couponRate;
+      bondprice=bondprice+Bond_Price(r_t, a, sigma, t, couponTimes[i], yieldClass)*couponRate;
     }
   }
   return bondprice;
@@ -361,18 +361,18 @@ auto AmericanSwaption(
     auto fInv=[&](double t1, const auto& currVal, double dt, int j){
         return sigma*currVal;//+phi(t+t1);
     };
-    auto payoff=[&](double t1, const auto& currVal, double dt, int j){
+    auto payoff=[&](double t1, const auto& currVal, double dt, int j)/*-> decltype(currVal)*/{
+        
         if(trackPhi.find(j)==trackPhi.end()){//to only compute phiT once per time step
             trackPhi.insert({j, phiT(a, sigma, t+t1, yieldClass)});
-            
         }
         t1=t1+t;
-        auto swp=Swap_Price(currVal+trackPhi.find(j)->second, a, sigma, t1, T+t1-TM, delta, strike, yieldClass);        
+        auto swp=Swap_Price(currVal+trackPhi.find(j)->second, a, sigma, t1, T+t1-TM, delta, strike, yieldClass);
         if(swp>0.0){
             return swp;
         }
         else{
-            return 0.0;
+            return swp-swp;
         } 
     };
     auto discount=[&](double t1, const auto& currVal, double dt, int j){
