@@ -159,12 +159,12 @@
     
     
 
-    
-  /*std::unordered_map<std::string, AutoDiff> parameters;
+    /*
+  std::unordered_map<std::string, AutoDiff> parameters;
   parameters.insert({"Underlying", AutoDiff(50, 0)});
   parameters.insert({"Strike", AutoDiff(50, 0)});
-  parameters.insert({"Maturity", AutoDiff(1, 0)});
-  parameters.insert({"Sigma", AutoDiff(.3, 0)});
+  parameters.insert({"Maturity", AutoDiff(1.0, 0)});
+  parameters.insert({"Sigma", AutoDiff(0.3, 0)});
   parameters.insert({"R", AutoDiff(.03, 0)});
 
   bool is_first_iteration = true;
@@ -177,7 +177,7 @@
   std::cout<<"Choose one of the parameters to find the price and derivative with respect to that parameter: ";
   std::string response;
   std::cin>>response;
-  std::cout<<response<<std::endl;
+ // std::cout<<response<<std::endl;
   while(parameters.find(response)==parameters.end()){
     std::cout<<"Parameter doesn't exist!  Choose a valid parameter:"<<std::endl;
     std::cin>>response;
