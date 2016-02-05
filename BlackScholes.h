@@ -2,7 +2,6 @@
 #define __BLACKSCHOLES_H_INCLUDED__
 #include <cmath>
 #include "AutoDiff.h"
-#include <assert.h>
 
 auto BSCall(
     const auto&,/*underlying*/

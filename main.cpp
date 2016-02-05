@@ -25,23 +25,23 @@
     double sig=.02;
     double a=.3;
     double b=.04;
-    
+
     auto bndV=[&](double r, double a, double b, double sigma, double t){
         double at=(1-exp(-a*t))/a;
         double ct=sigma*sigma;
         ct=(b-ct/(2*a*a))*(at-t)-ct*at*at/(4*a);
         return exp(-at*r+ct);
     };
-    
-    
-    Date currDate; 
+
+
+    Date currDate;
     for(int i=0; i<n; ++i){
         testYield.push_back(SpotValue(currDate+(i+1), (1/bndV(currRate, a, b, sig, (currDate+(i+1))-currDate)-1)/((currDate+(i+1))-currDate)));
       //std::cout<<"price: "<<bndV(currRate, a, b, sig, (currDate+(i+1))-currDate)<<std::endl;
-  } 
-  YieldSpline yld(testYield, currDate, currRate); 
+  }
+  YieldSpline yld(testYield, currDate, currRate);
     //std::cout<<exp(-yld.Yield(2))<<std::endl;
-  std::vector<double> couponTimes(5); 
+  std::vector<double> couponTimes(5);
   couponTimes[0]=.5;
   couponTimes[1]=1;
   couponTimes[2]=1.5;
@@ -61,25 +61,25 @@
     double optMaturity=1.5;
     double delta=.25;
      AutoDiff curr(currRate, 1.0);
-    //std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;     
+    //std::cout<<Swaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
     std::cout<<Swaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
-    //std::cout<<AmericanSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;      
-   
-     std::cout<<AmericanSwaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;    
-         
+    //std::cout<<AmericanSwaption(currRate, a, sig, strike, futureTime, swpMaturity, optMaturity, delta, yld)<<std::endl;
+
+     std::cout<<AmericanSwaption(currRate, a, sig, strike, 0.0, 4.5, .5, delta, yld)<<std::endl;
+
      AutoDiff ev=Swaption(curr, a, sig, strike, 0.0, 4.5, .5, delta, yld);
-      
-    std::cout<<ev.getStandard()<<std::endl;  
-    std::cout<<ev.getDual()<<std::endl;    
-    
-     
-    AutoDiff v=AmericanSwaption(curr, a, sig, strike, 0.0, 4.5, .5, delta, yld);  
-    std::cout<<v.getStandard()<<std::endl;  
-    std::cout<<v.getDual()<<std::endl; */  
-    
-  
-      
-    Date currDate;  
+
+    std::cout<<ev.getStandard()<<std::endl;
+    std::cout<<ev.getDual()<<std::endl;
+
+
+    AutoDiff v=AmericanSwaption(curr, a, sig, strike, 0.0, 4.5, .5, delta, yld);
+    std::cout<<v.getStandard()<<std::endl;
+    std::cout<<v.getDual()<<std::endl;
+    */
+
+
+    Date currDate;   
     YieldSpline yld;
     double b;//long run average
     double daysDiff;//years from now that libor rate goes till (typically 7 days divided by 360)
@@ -88,13 +88,13 @@
     yld.getForwardCurve(); //send data ot node
     HullWhiteEngine<double> HW;
     double r0=yld.getShortRate(); //note we can change this here to an AutoDiff if we want sensitivities
-    SimulateNorm rNorm;  
+    SimulateNorm rNorm;
     MC<double> monteC;
     auto runParameters=[&](std::string& parameters){
         rapidjson::Document parms;
         parms.Parse(parameters.c_str());//yield data
         parameters.clear();
-        std::vector<AssetFeatures> portfolio; 
+        std::vector<AssetFeatures> portfolio;
         AssetFeatures asset;
         //parse the string that came in
         currDate.setScale("year");
@@ -118,46 +118,46 @@
         b=findHistoricalMean(historical, daysDiff, a);
 
         currDate.setScale("day");
-        Date PortfolioMaturity; 
+        Date PortfolioMaturity;
         if(parms.FindMember("t")!=parms.MemberEnd()){
             PortfolioMaturity=currDate+parms["t"].GetInt();
         }
-        int m=0;  
+        int m=0;
         if(parms.FindMember("n")!=parms.MemberEnd()){
             m=parms["n"].GetInt();
         }
         monteC.setM(m);
         portfolio.push_back(asset);
-        std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity);  
-        
+        std::vector<Date> path=getUniquePath(portfolio, PortfolioMaturity);
+
         monteC.simulateDistribution([&](){
-            return executePortfolio(portfolio, currDate, 
+            return executePortfolio(portfolio, currDate,
                 [&](const auto& currVal, const auto& time){
                     double vl=rNorm.getNorm();
                     return generateVasicek(currVal, time, a, b, sigma, vl);
-                }, 
-                r0,   
-                path,  
+                },
+                r0,
+                path,
                 [&](AssetFeatures& asset, auto& rate, Date& maturity,   Date& asOfDate){
                     return HW.HullWhitePrice(asset, rate, maturity, asOfDate, yld);
                 }
             );
-        });   
+        });
 
         std::vector<double> dist=monteC.getDistribution();
         double min=DBL_MAX; //purposely out of order because actual min and max are found within the function
         double max=DBL_MIN;
         binAndSend(min, max, dist); //send histogram to node
-    }; 
+    };
     while(true){
         std::string parameters;
         for (parameters; std::getline(std::cin, parameters);) {
-            break; 
+            break;
         }
         runParameters(parameters);
     }
-    
-    
+
+
 
     /*
   std::unordered_map<std::string, AutoDiff> parameters;
